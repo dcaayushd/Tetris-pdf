@@ -1,20 +1,63 @@
 import 'package:flutter/material.dart';
+import 'widgets/game_board.dart';
+import 'widgets/next_piece.dart';
+import 'widgets/score_display.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(const TetrisApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class TetrisApp extends StatelessWidget {
+  const TetrisApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
+    return MaterialApp(
+      title: 'PDF-Style Tetris',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.grey,
+          background: Colors.white,
+        ),
+        useMaterial3: true,
+      ),
+      home: const Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: TetrisGame(),
         ),
       ),
+    );
+  }
+}
+
+class TetrisGame extends StatelessWidget {
+  const TetrisGame({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        Expanded(
+          flex: 3,
+          child: GameBoard(),
+        ),
+        Expanded(
+          flex: 1,
+          child: Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: NextPieceDisplay(),
+              ),
+              Expanded(
+                flex: 1,
+                child: ScoreDisplay(),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
