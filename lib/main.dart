@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'widgets/control_buttons.dart';
 import 'widgets/game_board.dart';
 import 'widgets/next_piece.dart';
 import 'widgets/score_display.dart';
@@ -13,7 +14,6 @@ class TetrisApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'PDF-Style Tetris',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -21,6 +21,10 @@ class TetrisApp extends StatelessWidget {
           background: Colors.white,
         ),
         useMaterial3: true,
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(fontFamily: 'Courier', color: Colors.black),
+          bodyMedium: TextStyle(fontFamily: 'Courier', color: Colors.black),
+        ),
       ),
       home: const Scaffold(
         backgroundColor: Colors.white,
@@ -58,6 +62,7 @@ class TetrisGame extends StatelessWidget {
             ],
           ),
         ),
+        ControlButtons(),
       ],
     );
   }
