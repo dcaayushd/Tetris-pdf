@@ -14,6 +14,7 @@ class TetrisApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'PDF-Style Tetris',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
