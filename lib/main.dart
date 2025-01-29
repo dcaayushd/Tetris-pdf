@@ -49,12 +49,14 @@ class TetrisGame extends StatefulWidget {
 class _TetrisGameState extends State<TetrisGame> {
   late Piece nextPiece;
   late int score;
+  late GlobalKey<GameBoardState> gameBoardKey;
 
   @override
   void initState() {
     super.initState();
     nextPiece = _getRandomPiece();
     score = 0;
+    gameBoardKey = GlobalKey<GameBoardState>();
   }
 
   Piece _getRandomPiece() {
@@ -62,52 +64,47 @@ class _TetrisGameState extends State<TetrisGame> {
     return Piece(pieces[random]);
   }
 
-  void _moveLeft() {
-    // Implement left movement logic
-  }
-
-  void _moveRight() {
-    // Implement right movement logic
-  }
-
-  void _moveDown() {
-    // Implement down movement logic
-  }
-
-  void _rotatePiece() {
-    // Implement rotation logic
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Expanded(
-          flex: 3,
-          child: GameBoard(),
-        ),
-        Expanded(
-          flex: 1,
+        // Score and Next Piece at the top
+        Padding(
+          padding: const EdgeInsets.all(8.0),
           child: Row(
             children: [
               Expanded(
-                flex: 2,
-                child: NextPieceDisplay(nextPiece: nextPiece),
+                flex: 1,
+                child: ScoreDisplay(score: score),
               ),
               Expanded(
                 flex: 1,
-                child: ScoreDisplay(
-                    // score: score,
-                    ), // Pass score
+                child: NextPieceDisplay(nextPiece: nextPiece),
               ),
             ],
           ),
         ),
+        Expanded(
+          flex: 3,
+          child: GameBoard(
+            key: gameBoardKey,
+            onScoreUpdate: (newScore) {
+              setState(() {
+                score = newScore;
+              });
+            },
+            onNextPieceUpdate: (newNextPiece) {
+              setState(() {
+                nextPiece = newNextPiece;
+              });
+            },
+          ),
+        ),
         ControlButtons(
-          onLeft: _moveLeft, // Pass control callbacks
-          onRight: _moveRight,
-          onDown: _moveDown,
-          onRotate: _rotatePiece,
+          onLeft: () => gameBoardKey.currentState?.movePiece(-1),
+          onRight: () => gameBoardKey.currentState?.movePiece(1),
+          onDown: () => gameBoardKey.currentState?.moveDown(),
+          onRotate: () => gameBoardKey.currentState?.rotatePiece(),
         ),
       ],
     );

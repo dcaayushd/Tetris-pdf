@@ -4,13 +4,21 @@ import '../models/piece.dart';
 import '../utils/constants.dart';
 
 class GameBoard extends StatefulWidget {
-  const GameBoard({super.key});
+  final Function(int) onScoreUpdate;
+  final Function(Piece) onNextPieceUpdate;
+
+  const GameBoard({
+    super.key,
+    required this.onScoreUpdate,
+    required this.onNextPieceUpdate,
+  });
 
   @override
-  State<GameBoard> createState() => _GameBoardState();
+  GameBoardState createState() => GameBoardState();
 }
 
-class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMixin {
+class GameBoardState extends State<GameBoard>
+    with SingleTickerProviderStateMixin {
   late List<List<int>> board;
   late Piece currentPiece;
   late Piece nextPiece;
@@ -39,6 +47,12 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
     currentRow = 0;
     currentCol = boardWidth ~/ 2 - currentPiece.shape[0].length ~/ 2;
     isGameOver = false;
+
+    // Check if the initial position is valid
+    if (_checkCollision(currentRow, currentCol, currentPiece.shape)) {
+      _stopGame();
+      isGameOver = true;
+    }
   }
 
   void _startGame() {
@@ -65,6 +79,7 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
     if (_checkCollision(currentRow + 1, currentCol, currentPiece.shape)) {
       _placePiece();
       _clearLines();
+      widget.onNextPieceUpdate(nextPiece);
       currentPiece = nextPiece;
       nextPiece = _getRandomPiece();
       currentRow = 0;
@@ -95,7 +110,9 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
         board.removeAt(i);
         board.insert(0, List.filled(boardWidth, 0));
         score += 100;
-        _controller.duration = Duration(milliseconds: 500 - (score ~/ 100) * 50); // Increase speed
+        widget.onScoreUpdate(score);
+        _controller.duration =
+            Duration(milliseconds: 500 - (score ~/ 100) * 50);
       }
     }
   }
@@ -104,7 +121,10 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
     for (int i = 0; i < shape.length; i++) {
       for (int j = 0; j < shape[i].length; j++) {
         if (shape[i][j] == 1) {
-          if (row + i >= boardHeight || col + j < 0 || col + j >= boardWidth || board[row + i][col + j] == 1) {
+          if (row + i >= boardHeight ||
+              col + j < 0 ||
+              col + j >= boardWidth ||
+              board[row + i][col + j] == 1) {
             return true;
           }
         }
@@ -113,16 +133,27 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
     return false;
   }
 
-  void _movePiece(int direction) {
+  // Expose methods for moving and rotating the piece
+  void movePiece(int direction) {
     if (isGameOver) return;
     setState(() {
-      if (!_checkCollision(currentRow, currentCol + direction, currentPiece.shape)) {
+      if (!_checkCollision(
+          currentRow, currentCol + direction, currentPiece.shape)) {
         currentCol += direction;
       }
     });
   }
 
-  void _rotatePiece() {
+  void moveDown() {
+    if (isGameOver) return;
+    setState(() {
+      if (!_checkCollision(currentRow + 1, currentCol, currentPiece.shape)) {
+        currentRow++;
+      }
+    });
+  }
+
+  void rotatePiece() {
     if (isGameOver) return;
     setState(() {
       currentPiece.rotate();
@@ -145,13 +176,13 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
             onKey: (event) {
               if (event is RawKeyDownEvent) {
                 if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                  _movePiece(-1);
+                  movePiece(-1);
                 } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-                  _movePiece(1);
+                  movePiece(1);
                 } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-                  _updateGame();
+                  moveDown();
                 } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-                  _rotatePiece();
+                  rotatePiece();
                 }
               }
             },

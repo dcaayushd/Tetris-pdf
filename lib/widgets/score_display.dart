@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class ScoreDisplay extends StatelessWidget {
-  const ScoreDisplay({super.key});
+  final int score;
+
+  const ScoreDisplay({super.key, required this.score});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +19,7 @@ class ScoreDisplay extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '0', 
+            '$score',
             style: const TextStyle(fontSize: 24, color: Colors.black),
           ),
         ],
