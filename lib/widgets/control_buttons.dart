@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 
 class ControlButtons extends StatelessWidget {
-  const ControlButtons({super.key});
+  final Function() onLeft;
+  final Function() onRight;
+  final Function() onDown;
+  final Function() onRotate;
+
+  const ControlButtons({
+    super.key,
+    required this.onLeft,
+    required this.onRight,
+    required this.onDown,
+    required this.onRotate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -11,28 +22,20 @@ class ControlButtons extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_left),
-            onPressed: () {
-              // Move left
-            },
+            icon: const Icon(Icons.arrow_back, size: 40),
+            onPressed: onLeft,
           ),
           IconButton(
-            icon: const Icon(Icons.arrow_right),
-            onPressed: () {
-              // Move right
-            },
+            icon: const Icon(Icons.arrow_forward, size: 40),
+            onPressed: onRight,
           ),
           IconButton(
-            icon: const Icon(Icons.arrow_downward),
-            onPressed: () {
-              // Move down
-            },
+            icon: const Icon(Icons.arrow_downward, size: 40),
+            onPressed: onDown,
           ),
           IconButton(
-            icon: const Icon(Icons.rotate_right),
-            onPressed: () {
-              // Rotate
-            },
+            icon: const Icon(Icons.rotate_right, size: 40),
+            onPressed: onRotate,
           ),
         ],
       ),

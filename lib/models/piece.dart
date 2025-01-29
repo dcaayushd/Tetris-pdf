@@ -2,8 +2,7 @@ class Piece {
   late List<List<int>> shape;
   late int rotationState;
 
-  Piece(List<List<int>> shape) {
-    this.shape = shape;
+  Piece(this.shape) {
     rotationState = 0;
   }
 

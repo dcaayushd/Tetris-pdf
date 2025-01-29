@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tetris_pdf/models/piece.dart';
+import 'package:tetris_pdf/utils/constants.dart';
 import 'widgets/control_buttons.dart';
 import 'widgets/game_board.dart';
 import 'widgets/next_piece.dart';
@@ -19,7 +21,7 @@ class TetrisApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.grey,
-          background: Colors.white,
+          surface: Colors.white,
         ),
         useMaterial3: true,
         textTheme: const TextTheme(
@@ -37,12 +39,48 @@ class TetrisApp extends StatelessWidget {
   }
 }
 
-class TetrisGame extends StatelessWidget {
+class TetrisGame extends StatefulWidget {
   const TetrisGame({super.key});
 
   @override
+  State<TetrisGame> createState() => _TetrisGameState();
+}
+
+class _TetrisGameState extends State<TetrisGame> {
+  late Piece nextPiece;
+  late int score;
+
+  @override
+  void initState() {
+    super.initState();
+    nextPiece = _getRandomPiece();
+    score = 0;
+  }
+
+  Piece _getRandomPiece() {
+    final random = DateTime.now().millisecond % pieces.length;
+    return Piece(pieces[random]);
+  }
+
+  void _moveLeft() {
+    // Implement left movement logic
+  }
+
+  void _moveRight() {
+    // Implement right movement logic
+  }
+
+  void _moveDown() {
+    // Implement down movement logic
+  }
+
+  void _rotatePiece() {
+    // Implement rotation logic
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
         Expanded(
           flex: 3,
@@ -54,16 +92,23 @@ class TetrisGame extends StatelessWidget {
             children: [
               Expanded(
                 flex: 2,
-                child: NextPieceDisplay(),
+                child: NextPieceDisplay(nextPiece: nextPiece),
               ),
               Expanded(
                 flex: 1,
-                child: ScoreDisplay(),
+                child: ScoreDisplay(
+                    // score: score,
+                    ), // Pass score
               ),
             ],
           ),
         ),
-        ControlButtons(),
+        ControlButtons(
+          onLeft: _moveLeft, // Pass control callbacks
+          onRight: _moveRight,
+          onDown: _moveDown,
+          onRotate: _rotatePiece,
+        ),
       ],
     );
   }

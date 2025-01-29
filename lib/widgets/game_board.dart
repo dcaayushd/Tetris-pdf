@@ -18,6 +18,7 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
   late int currentRow;
   late int currentCol;
   late AnimationController _controller;
+  bool isGameOver = false;
 
   @override
   void initState() {
@@ -27,7 +28,7 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 500),
     )..addListener(_updateGame);
-    _controller.repeat();
+    _startGame();
   }
 
   void _initializeGame() {
@@ -37,6 +38,20 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
     score = 0;
     currentRow = 0;
     currentCol = boardWidth ~/ 2 - currentPiece.shape[0].length ~/ 2;
+    isGameOver = false;
+  }
+
+  void _startGame() {
+    _controller.repeat();
+  }
+
+  void _stopGame() {
+    _controller.stop();
+  }
+
+  void _restartGame() {
+    _initializeGame();
+    _startGame();
   }
 
   Piece _getRandomPiece() {
@@ -45,6 +60,8 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
   }
 
   void _updateGame() {
+    if (isGameOver) return;
+
     if (_checkCollision(currentRow + 1, currentCol, currentPiece.shape)) {
       _placePiece();
       _clearLines();
@@ -53,7 +70,8 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
       currentRow = 0;
       currentCol = boardWidth ~/ 2 - currentPiece.shape[0].length ~/ 2;
       if (_checkCollision(currentRow, currentCol, currentPiece.shape)) {
-        _initializeGame(); // Game over
+        _stopGame();
+        isGameOver = true;
       }
     } else {
       currentRow++;
@@ -77,6 +95,7 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
         board.removeAt(i);
         board.insert(0, List.filled(boardWidth, 0));
         score += 100;
+        _controller.duration = Duration(milliseconds: 500 - (score ~/ 100) * 50); // Increase speed
       }
     }
   }
@@ -95,6 +114,7 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
   }
 
   void _movePiece(int direction) {
+    if (isGameOver) return;
     setState(() {
       if (!_checkCollision(currentRow, currentCol + direction, currentPiece.shape)) {
         currentCol += direction;
@@ -103,6 +123,7 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
   }
 
   void _rotatePiece() {
+    if (isGameOver) return;
     setState(() {
       currentPiece.rotate();
       if (_checkCollision(currentRow, currentCol, currentPiece.shape)) {
@@ -115,43 +136,65 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    return RawKeyboardListener(
-      focusNode: FocusNode(),
-      autofocus: true,
-      onKey: (event) {
-        if (event is RawKeyDownEvent) {
-          if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-            _movePiece(-1);
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-            _movePiece(1);
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-            _updateGame();
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-            _rotatePiece();
-          }
-        }
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade400, width: 2),
-        ),
-        child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: boardWidth,
-          ),
-          itemBuilder: (context, index) {
-            final row = index ~/ boardWidth;
-            final col = index % boardWidth;
-            return Container(
+    return Column(
+      children: [
+        Expanded(
+          child: RawKeyboardListener(
+            focusNode: FocusNode(),
+            autofocus: true,
+            onKey: (event) {
+              if (event is RawKeyDownEvent) {
+                if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                  _movePiece(-1);
+                } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+                  _movePiece(1);
+                } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                  _updateGame();
+                } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                  _rotatePiece();
+                }
+              }
+            },
+            child: Container(
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
-                color: board[row][col] == 1 ? Colors.black : Colors.white,
+                border: Border.all(color: Colors.grey.shade400, width: 2),
               ),
-            );
-          },
-          itemCount: boardWidth * boardHeight,
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: boardWidth,
+                ),
+                itemBuilder: (context, index) {
+                  final row = index ~/ boardWidth;
+                  final col = index % boardWidth;
+                  return Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      color: board[row][col] == 1 ? Colors.black : Colors.white,
+                    ),
+                  );
+                },
+                itemCount: boardWidth * boardHeight,
+              ),
+            ),
+          ),
         ),
-      ),
+        if (isGameOver)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                const Text(
+                  'Game Over!',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                ElevatedButton(
+                  onPressed: _restartGame,
+                  child: const Text('Restart'),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }
