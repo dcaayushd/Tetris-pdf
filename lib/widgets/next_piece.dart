@@ -19,22 +19,33 @@ class NextPieceDisplay extends StatelessWidget {
             style: TextStyle(fontSize: 16, color: Colors.black),
           ),
           const SizedBox(height: 8),
-          GridView.builder(
-            shrinkWrap: true,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: nextPiece.shape[0].length,
+          SizedBox(
+            width: 100,
+            height: 100, 
+            child: GridView.builder(
+              shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+              ),
+              itemBuilder: (context, index) {
+                final row = index ~/ 4;
+                final col = index % 4;
+                final pieceRow = row - (4 - nextPiece.shape.length) ~/ 2;
+                final pieceCol = col - (4 - nextPiece.shape[0].length) ~/ 2;
+                final isFilled = pieceRow >= 0 &&
+                    pieceRow < nextPiece.shape.length &&
+                    pieceCol >= 0 &&
+                    pieceCol < nextPiece.shape[0].length &&
+                    nextPiece.shape[pieceRow][pieceCol] == 1;
+                return Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    color: isFilled ? Colors.black : Colors.white,
+                  ),
+                );
+              },
+              itemCount: 16, // 4x4 grid
             ),
-            itemBuilder: (context, index) {
-              final row = index ~/ nextPiece.shape[0].length;
-              final col = index % nextPiece.shape[0].length;
-              return Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  color: nextPiece.shape[row][col] == 1 ? Colors.black : Colors.white,
-                ),
-              );
-            },
-            itemCount: nextPiece.shape.length * nextPiece.shape[0].length,
           ),
         ],
       ),

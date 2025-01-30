@@ -50,13 +50,20 @@ class _TetrisGameState extends State<TetrisGame> {
   late Piece nextPiece;
   late int score;
   late GlobalKey<GameBoardState> gameBoardKey;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    gameBoardKey = GlobalKey<GameBoardState>();
     nextPiece = _getRandomPiece();
     score = 0;
-    gameBoardKey = GlobalKey<GameBoardState>();
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() => _isInitialized = true);
+      }
+    });
   }
 
   Piece _getRandomPiece() {
@@ -68,44 +75,56 @@ class _TetrisGameState extends State<TetrisGame> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Score and Next Piece at the top
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
             children: [
+              if (_isInitialized)
+                IconButton(
+                  icon: Icon(gameBoardKey.currentState?.isPaused == true 
+                      ? Icons.play_arrow 
+                      : Icons.pause),
+                  onPressed: () {
+                    final currentState = gameBoardKey.currentState;
+                    if (currentState != null) {
+                      final newPauseState = !currentState.isPaused;
+                      currentState.togglePause(newPauseState);
+                      setState(() {});
+                    }
+                  },
+                ),
               Expanded(
-                flex: 1,
-                child: ScoreDisplay(score: score),
+                flex: 2,
+                child: NextPieceDisplay(nextPiece: nextPiece),
               ),
               Expanded(
                 flex: 1,
-                child: NextPieceDisplay(nextPiece: nextPiece),
+                child: ScoreDisplay(score: score),
               ),
             ],
           ),
         ),
         Expanded(
           flex: 3,
-          child: GameBoard(
-            key: gameBoardKey,
-            onScoreUpdate: (newScore) {
-              setState(() {
-                score = newScore;
-              });
-            },
-            onNextPieceUpdate: (newNextPiece) {
-              setState(() {
-                nextPiece = newNextPiece;
-              });
-            },
+          child: _isInitialized
+              ? GameBoard(
+                  key: gameBoardKey,
+                  onScoreUpdate: (newScore) {
+                    if (mounted) setState(() => score = newScore);
+                  },
+                  onNextPieceUpdate: (newNextPiece) {
+                    if (mounted) setState(() => nextPiece = newNextPiece);
+                  },
+                )
+              : const Center(child: CircularProgressIndicator()),
+        ),
+        if (_isInitialized)
+          ControlButtons(
+            onLeft: () => gameBoardKey.currentState?.movePiece(-1),
+            onRight: () => gameBoardKey.currentState?.movePiece(1),
+            onDown: () => gameBoardKey.currentState?.moveDown(),
+            onRotate: () => gameBoardKey.currentState?.rotatePiece(),
           ),
-        ),
-        ControlButtons(
-          onLeft: () => gameBoardKey.currentState?.movePiece(-1),
-          onRight: () => gameBoardKey.currentState?.movePiece(1),
-          onDown: () => gameBoardKey.currentState?.moveDown(),
-          onRotate: () => gameBoardKey.currentState?.rotatePiece(),
-        ),
       ],
     );
   }

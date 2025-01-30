@@ -21,21 +21,46 @@ class ControlButtons extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back, size: 40),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10), 
+              ),
+              padding: const EdgeInsets.all(16), 
+            ),
             onPressed: onLeft,
+            child: const Icon(Icons.arrow_back, size: 40),
           ),
-          IconButton(
-            icon: const Icon(Icons.arrow_forward, size: 40),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10), 
+              ),
+              padding: const EdgeInsets.all(16), 
+            ),
             onPressed: onRight,
+            child: const Icon(Icons.arrow_forward, size: 40),
+
           ),
-          IconButton(
-            icon: const Icon(Icons.arrow_downward, size: 40),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10), 
+              ),
+              padding: const EdgeInsets.all(16), 
+            ),
             onPressed: onDown,
+            child: const Icon(Icons.arrow_downward, size: 40),
           ),
-          IconButton(
-            icon: const Icon(Icons.rotate_right, size: 40),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10), 
+              ),
+              padding: const EdgeInsets.all(16), 
+            ),
             onPressed: onRotate,
+            child: const Icon(Icons.rotate_right, size: 40),
           ),
         ],
       ),

@@ -27,6 +27,7 @@ class GameBoardState extends State<GameBoard>
   late int currentCol;
   late AnimationController _controller;
   bool isGameOver = false;
+  bool isPaused = false;
 
   @override
   void initState() {
@@ -34,9 +35,14 @@ class GameBoardState extends State<GameBoard>
     _initializeGame();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
-    )..addListener(_updateGame);
-    _startGame();
+      duration: const Duration(milliseconds: 1000),
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Future.delayed(const Duration(seconds: 1), _startGame);
+      }
+    });
   }
 
   void _initializeGame() {
@@ -47,25 +53,44 @@ class GameBoardState extends State<GameBoard>
     currentRow = 0;
     currentCol = boardWidth ~/ 2 - currentPiece.shape[0].length ~/ 2;
     isGameOver = false;
+    isPaused = false;
 
-    // Check if the initial position is valid
+    // Initial position validation
     if (_checkCollision(currentRow, currentCol, currentPiece.shape)) {
-      _stopGame();
-      isGameOver = true;
+      currentCol = (boardWidth - currentPiece.shape[0].length) ~/ 2;
+      if (_checkCollision(currentRow, currentCol, currentPiece.shape)) {
+        _handleGameOver();
+      }
     }
   }
 
   void _startGame() {
-    _controller.repeat();
+    if (mounted && !isGameOver) {
+      _controller
+        ..reset()
+        ..addListener(_updateGame)
+        ..repeat();
+    }
   }
 
-  void _stopGame() {
-    _controller.stop();
+  void _handleGameOver() {
+    if (mounted) {
+      setState(() {
+        isGameOver = true;
+        _controller.stop();
+      });
+    }
   }
 
-  void _restartGame() {
-    _initializeGame();
-    _startGame();
+  void togglePause(bool pause) {
+    if (mounted) {
+      setState(() => isPaused = pause);
+      if (pause) {
+        _controller.stop();
+      } else {
+        _controller.repeat();
+      }
+    }
   }
 
   Piece _getRandomPiece() {
@@ -74,7 +99,7 @@ class GameBoardState extends State<GameBoard>
   }
 
   void _updateGame() {
-    if (isGameOver) return;
+    if (isGameOver || isPaused) return;
 
     if (_checkCollision(currentRow + 1, currentCol, currentPiece.shape)) {
       _placePiece();
@@ -84,14 +109,14 @@ class GameBoardState extends State<GameBoard>
       nextPiece = _getRandomPiece();
       currentRow = 0;
       currentCol = boardWidth ~/ 2 - currentPiece.shape[0].length ~/ 2;
+
       if (_checkCollision(currentRow, currentCol, currentPiece.shape)) {
-        _stopGame();
-        isGameOver = true;
+        _handleGameOver();
       }
     } else {
       currentRow++;
     }
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   void _placePiece() {
@@ -105,15 +130,18 @@ class GameBoardState extends State<GameBoard>
   }
 
   void _clearLines() {
+    int linesCleared = 0;
     for (int i = boardHeight - 1; i >= 0; i--) {
       if (board[i].every((cell) => cell == 1)) {
         board.removeAt(i);
         board.insert(0, List.filled(boardWidth, 0));
-        score += 100;
-        widget.onScoreUpdate(score);
-        _controller.duration =
-            Duration(milliseconds: 500 - (score ~/ 100) * 50);
+        linesCleared++;
       }
+    }
+    if (linesCleared > 0) {
+      score += linesCleared * 100;
+      widget.onScoreUpdate(score);
+      _controller.duration = Duration(milliseconds: 1000 - (score ~/ 100) * 50);
     }
   }
 
@@ -133,9 +161,8 @@ class GameBoardState extends State<GameBoard>
     return false;
   }
 
-  // Expose methods for moving and rotating the piece
   void movePiece(int direction) {
-    if (isGameOver) return;
+    if (isGameOver || isPaused) return;
     setState(() {
       if (!_checkCollision(
           currentRow, currentCol + direction, currentPiece.shape)) {
@@ -145,7 +172,7 @@ class GameBoardState extends State<GameBoard>
   }
 
   void moveDown() {
-    if (isGameOver) return;
+    if (isGameOver || isPaused) return;
     setState(() {
       if (!_checkCollision(currentRow + 1, currentCol, currentPiece.shape)) {
         currentRow++;
@@ -154,15 +181,22 @@ class GameBoardState extends State<GameBoard>
   }
 
   void rotatePiece() {
-    if (isGameOver) return;
+    if (isGameOver || isPaused) return;
     setState(() {
       currentPiece.rotate();
       if (_checkCollision(currentRow, currentCol, currentPiece.shape)) {
+        // Rotate back if collision
         currentPiece.rotate();
         currentPiece.rotate();
         currentPiece.rotate();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -174,7 +208,7 @@ class GameBoardState extends State<GameBoard>
             focusNode: FocusNode(),
             autofocus: true,
             onKey: (event) {
-              if (event is RawKeyDownEvent) {
+              if (event is RawKeyDownEvent && !isPaused) {
                 if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
                   movePiece(-1);
                 } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
@@ -219,7 +253,11 @@ class GameBoardState extends State<GameBoard>
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 ElevatedButton(
-                  onPressed: _restartGame,
+                  onPressed: () {
+                    _initializeGame();
+                    _startGame();
+                    setState(() {});
+                  },
                   child: const Text('Restart'),
                 ),
               ],
