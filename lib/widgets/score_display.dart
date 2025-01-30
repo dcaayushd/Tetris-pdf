@@ -8,19 +8,23 @@ class ScoreDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
       padding: const EdgeInsets.all(8.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const Text(
             'Score:',
             style: TextStyle(fontSize: 16, color: Colors.black),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
-            '$score',
-            style: const TextStyle(fontSize: 24, color: Colors.black),
+            '$score'.padLeft(6, '0'), 
+            style: const TextStyle(
+              fontSize: 24,
+              color: Colors.black,
+              fontFamily: 'Courier',
+            ),
           ),
         ],
       ),

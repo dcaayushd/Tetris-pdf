@@ -58,7 +58,8 @@ class _TetrisGameState extends State<TetrisGame> {
     gameBoardKey = GlobalKey<GameBoardState>();
     nextPiece = _getRandomPiece();
     score = 0;
-    
+
+    // Delay initialization until after the first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() => _isInitialized = true);
@@ -71,6 +72,18 @@ class _TetrisGameState extends State<TetrisGame> {
     return Piece(pieces[random]);
   }
 
+  void _handleScoreUpdate(int newScore) {
+    if (mounted) {
+      setState(() => score = newScore);
+    }
+  }
+
+  void _handleNextPieceUpdate(Piece newNextPiece) {
+    if (mounted) {
+      setState(() => nextPiece = newNextPiece);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -79,10 +92,18 @@ class _TetrisGameState extends State<TetrisGame> {
           padding: const EdgeInsets.all(8.0),
           child: Row(
             children: [
+              Expanded(
+                flex: 2,
+                child: NextPieceDisplay(nextPiece: nextPiece),
+              ),
+              Expanded(
+                flex: 1,
+                child: ScoreDisplay(score: score),
+              ),
               if (_isInitialized)
                 IconButton(
-                  icon: Icon(gameBoardKey.currentState?.isPaused == true 
-                      ? Icons.play_arrow 
+                  icon: Icon(gameBoardKey.currentState?.isPaused == true
+                      ? Icons.play_arrow
                       : Icons.pause),
                   onPressed: () {
                     final currentState = gameBoardKey.currentState;
@@ -93,14 +114,6 @@ class _TetrisGameState extends State<TetrisGame> {
                     }
                   },
                 ),
-              Expanded(
-                flex: 2,
-                child: NextPieceDisplay(nextPiece: nextPiece),
-              ),
-              Expanded(
-                flex: 1,
-                child: ScoreDisplay(score: score),
-              ),
             ],
           ),
         ),
@@ -109,12 +122,8 @@ class _TetrisGameState extends State<TetrisGame> {
           child: _isInitialized
               ? GameBoard(
                   key: gameBoardKey,
-                  onScoreUpdate: (newScore) {
-                    if (mounted) setState(() => score = newScore);
-                  },
-                  onNextPieceUpdate: (newNextPiece) {
-                    if (mounted) setState(() => nextPiece = newNextPiece);
-                  },
+                  onScoreUpdate: _handleScoreUpdate,
+                  onNextPieceUpdate: _handleNextPieceUpdate,
                 )
               : const Center(child: CircularProgressIndicator()),
         ),
