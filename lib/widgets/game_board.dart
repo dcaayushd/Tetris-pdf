@@ -35,13 +35,15 @@ class GameBoardState extends State<GameBoard>
     _initializeGame();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      // duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 800),
     );
 
     // Delay game start to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        Future.delayed(const Duration(seconds: 1), _startGame);
+        // Future.delayed(const Duration(seconds: 1), _startGame);
+        Future.delayed(const Duration(seconds: 2), _startGame);
       }
     });
   }
@@ -99,7 +101,8 @@ class GameBoardState extends State<GameBoard>
       widget.onNextPieceUpdate(nextPiece);
       currentPiece = nextPiece;
       nextPiece = _getRandomPiece();
-      currentRow = -1;
+      // currentRow = -1;
+      currentRow = 0;
       currentCol = (boardWidth - currentPiece.shape[0].length) ~/ 2;
 
       if (_checkCollision(currentRow, currentCol, currentPiece.shape)) {
