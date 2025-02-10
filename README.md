@@ -1,3 +1,3 @@
 # tetris_pdf
 
-Game.
+Tetris Game.
