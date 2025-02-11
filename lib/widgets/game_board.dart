@@ -35,8 +35,7 @@ class GameBoardState extends State<GameBoard>
     _initializeGame();
     _controller = AnimationController(
       vsync: this,
-      // duration: const Duration(milliseconds: 1000),
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1000),
     );
 
     // Delay game start to avoid setState during build
@@ -58,13 +57,20 @@ class GameBoardState extends State<GameBoard>
     isGameOver = false;
     isPaused = false;
 
-    // Delay callbacks to avoid setState during build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        widget.onScoreUpdate(score);
-        widget.onNextPieceUpdate(nextPiece);
-      }
-    });
+    // // Delay callbacks to avoid setState during build
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   if (mounted) {
+    //     widget.onScoreUpdate(score);
+    //     widget.onNextPieceUpdate(nextPiece);
+    //   }
+    // });
+   // Instead, schedule them for the next frame
+  Future.microtask(() {
+    if (mounted) {
+      widget.onScoreUpdate(score);
+      widget.onNextPieceUpdate(nextPiece);
+    }
+  });
   }
 
   void _startGame() {
@@ -101,8 +107,8 @@ class GameBoardState extends State<GameBoard>
       widget.onNextPieceUpdate(nextPiece);
       currentPiece = nextPiece;
       nextPiece = _getRandomPiece();
-      // currentRow = -1;
-      currentRow = 0;
+      // currentRow = 0;
+      currentRow = -1;
       currentCol = (boardWidth - currentPiece.shape[0].length) ~/ 2;
 
       if (_checkCollision(currentRow, currentCol, currentPiece.shape)) {
@@ -114,44 +120,64 @@ class GameBoardState extends State<GameBoard>
     if (mounted) setState(() {});
   }
 
-  void _placePiece() {
-    for (int i = 0; i < currentPiece.shape.length; i++) {
-      for (int j = 0; j < currentPiece.shape[i].length; j++) {
-        if (currentPiece.shape[i][j] == 1) {
-          final row = currentRow + i;
-          if (row >= 0) {
-            board[row][currentCol + j] = 1;
-          }
+
+void _placePiece() {
+  bool piecePlaced = false;
+  for (int i = 0; i < currentPiece.shape.length; i++) {
+    for (int j = 0; j < currentPiece.shape[i].length; j++) {
+      if (currentPiece.shape[i][j] == 1) {
+        final row = currentRow + i;
+        if (row >= 0) {
+          board[row][currentCol + j] = 1;
+          piecePlaced = true;
         }
       }
     }
   }
+  
+  // Add points for placing a piece
+  if (piecePlaced) {
+    score += 10;  // Base points for placing a piece
+    widget.onScoreUpdate(score);
+  }
+}
 
   void _clearLines() {
-    int linesCleared = 0;
-    for (int i = boardHeight - 1; i >= 0; i--) {
-      if (board[i].every((cell) => cell == 1)) {
-        board.removeAt(i);
-        board.insert(0, List.filled(boardWidth, 0));
-        linesCleared++;
-      }
-    }
-    if (linesCleared > 0) {
-      score += linesCleared * 100;
-      widget.onScoreUpdate(score);
-
-      Duration newDuration = Duration(
-        milliseconds: 1000 - (score ~/ 100) * 50,
-      );
-      newDuration = newDuration < Duration(milliseconds: 100)
-          ? Duration(milliseconds: 100)
-          : newDuration > Duration(milliseconds: 1000)
-              ? Duration(milliseconds: 1000)
-              : newDuration;
-
-      _controller.duration = newDuration;
+  int linesCleared = 0;
+  for (int i = boardHeight - 1; i >= 0; i--) {
+    if (board[i].every((cell) => cell == 1)) {
+      board.removeAt(i);
+      board.insert(0, List.filled(boardWidth, 0));
+      linesCleared++;
     }
   }
+  if (linesCleared > 0) {
+    // Update score based on lines cleared using multiplier for more lines
+    final multiplier = [0, 100, 300, 500, 800]; // Bonus for multiple lines
+    score += multiplier[linesCleared];
+    widget.onScoreUpdate(score);
+
+    // Make speed increase much more gradual
+    int baseSpeed = 1000;
+    int levelSpeed = (score ~/ 1000) * 50; // Decrease 50ms every 1000 points
+    int newSpeed = baseSpeed - levelSpeed;
+    
+    // Keep speed between 300ms and 1000ms
+    newSpeed = newSpeed.clamp(300, 1000);
+    
+    Duration newDuration = Duration(milliseconds: newSpeed);
+    
+    // Only update speed if it's different
+    if (_controller.duration != newDuration) {
+      _controller.duration = newDuration;
+      // Important: Reset the animation with new duration
+      _controller
+        ..stop()
+        ..reset()
+        ..repeat();
+    }
+  }
+}
 
   bool _checkCollision(int row, int col, List<List<int>> shape) {
     for (int i = 0; i < shape.length; i++) {
