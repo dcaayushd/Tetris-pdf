@@ -5,6 +5,7 @@ import 'widgets/control_buttons.dart';
 import 'widgets/game_board.dart';
 import 'widgets/next_piece.dart';
 import 'widgets/score_display.dart';
+import 'widgets/level_display.dart';
 
 void main() {
   runApp(const TetrisApp());
@@ -49,6 +50,7 @@ class TetrisGame extends StatefulWidget {
 class _TetrisGameState extends State<TetrisGame> {
   late Piece nextPiece;
   int score = 0;
+  int level = 1;
   late GlobalKey<GameBoardState> gameBoardKey;
   bool _isInitialized = false;
 
@@ -58,7 +60,6 @@ class _TetrisGameState extends State<TetrisGame> {
     gameBoardKey = GlobalKey<GameBoardState>();
     nextPiece = _getRandomPiece();
 
-    // Delay initialization until after the first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() => _isInitialized = true);
@@ -83,6 +84,12 @@ class _TetrisGameState extends State<TetrisGame> {
     }
   }
 
+  void _handleLevelUpdate(int newLevel) {
+    if (mounted) {
+      setState(() => level = newLevel);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -94,8 +101,13 @@ class _TetrisGameState extends State<TetrisGame> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                flex: 1,
-                child: ScoreDisplay(score: score),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ScoreDisplay(score: score),
+                    LevelDisplay(level: level),
+                  ],
+                ),
               ),
               if (_isInitialized)
                 Container(
@@ -121,22 +133,26 @@ class _TetrisGameState extends State<TetrisGame> {
                   ),
                 ),
               Expanded(
-                flex: 1,
                 child: NextPieceDisplay(nextPiece: nextPiece),
               ),
             ],
           ),
         ),
+        const SizedBox(height: 20),
         Expanded(
-          flex: 3,
-          child: _isInitialized
-              ? GameBoard(
-                  key: gameBoardKey,
-                  onScoreUpdate: _handleScoreUpdate,
-                  onNextPieceUpdate: _handleNextPieceUpdate,
-                )
-              : const Center(child: CircularProgressIndicator()),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: _isInitialized
+                ? GameBoard(
+                    key: gameBoardKey,
+                    onScoreUpdate: _handleScoreUpdate,
+                    onNextPieceUpdate: _handleNextPieceUpdate,
+                    onLevelUpdate: _handleLevelUpdate,
+                  )
+                : const Center(child: CircularProgressIndicator()),
+          ),
         ),
+        const SizedBox(height: 20),
         if (_isInitialized)
           ControlButtons(
             onLeft: () => gameBoardKey.currentState?.movePiece(-1),

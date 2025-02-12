@@ -24,9 +24,9 @@ class ControlButtons extends StatelessWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10), 
+                borderRadius: BorderRadius.circular(10),
               ),
-              padding: const EdgeInsets.all(16), 
+              padding: const EdgeInsets.all(16),
             ),
             onPressed: onLeft,
             child: const Icon(Icons.arrow_back, size: 40),
@@ -34,20 +34,19 @@ class ControlButtons extends StatelessWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10), 
+                borderRadius: BorderRadius.circular(10),
               ),
-              padding: const EdgeInsets.all(16), 
+              padding: const EdgeInsets.all(16),
             ),
             onPressed: onRight,
             child: const Icon(Icons.arrow_forward, size: 40),
-
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10), 
+                borderRadius: BorderRadius.circular(10),
               ),
-              padding: const EdgeInsets.all(16), 
+              padding: const EdgeInsets.all(16),
             ),
             onPressed: onDown,
             child: const Icon(Icons.arrow_downward, size: 40),
@@ -55,9 +54,9 @@ class ControlButtons extends StatelessWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10), 
+                borderRadius: BorderRadius.circular(10),
               ),
-              padding: const EdgeInsets.all(16), 
+              padding: const EdgeInsets.all(16),
             ),
             onPressed: onRotate,
             child: const Icon(Icons.rotate_right, size: 40),
