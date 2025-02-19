@@ -293,6 +293,7 @@ class GameBoardState extends State<GameBoard>
               ),
             ),
           ),
+          
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
