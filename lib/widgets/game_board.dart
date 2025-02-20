@@ -302,7 +302,6 @@ class GameBoardState extends State<GameBoard>
               const Text('Top 5 High Scores:'),
             for (var i = 0; i < highScores.length; i++)
               Text('${i + 1}. ${highScores[i]}'),
-
             ],
           ),
           actions: [
